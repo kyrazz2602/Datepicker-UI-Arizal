@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Mode Datepicker UI</title>
+    <style>
+        /* --- 1. CSS VARIABLES (PALETTE WARNA) --- */
+        :root {
+            --bg-body: #121212;          /* Latar belakang halaman (sangat gelap) */
+            --bg-card: #1e1e24;          /* Latar belakang kalender (abu gelap) */
+            --text-main: #ffffff;        /* Warna teks utama */
+            --text-muted: #7aa1a9;       /* Warna teks pudar (hari libur/bulan lain) */
+            --accent-color: #00bcd4;     /* Cyan Neon untuk highlight */
+            --hover-bg: rgba(255, 255, 255, 0.1); /* Efek hover transparan */
+            --shadow-card: 0 15px 35px rgba(0, 0, 0, 0.5);
+        }
+
+        /* General Setup */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-body);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        /* --- ANIMATION DEFINITIONS --- */
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Efek Pulse sekarang menggunakan warna Accent */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 188, 212, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(0, 188, 212, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 188, 212, 0); }
+        }
+
+        /* --- COMPONENT STYLES --- */
+
+        .datepicker {
+            background-color: var(--bg-card);
+            border-radius: 16px; /* Lebih membulat */
+            box-shadow: var(--shadow-card);
+            width: 320px;
+            padding: 25px;
+            overflow: hidden;
+            border: 2px solid var(--accent-color); /* Border tipis halus */
+            
+            /* Animasi Masuk */
+            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); 
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .month-year {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.05); /* Sedikit latar belakang */
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease; 
+        }
+
+        .nav-btn:hover {
+            background-color: var(--accent-color);
+            color: var(--bg-card); /* Teks jadi gelap saat hover */
+            transform: scale(1.1);
+            box-shadow: 0 0 10px var(--accent-color); /* Efek glow tombol */
+        }
+        
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .days-of-week {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .day-name {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px; /* Jarak antar tanggal sedikit diperlebar */
+        }
+
+        .date {
+            height: 38px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            border-radius: 50%; /* Bentuk kotak membulat (Squircle) modern */
+            cursor: pointer;
+            position: relative;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Hover Effect: Glow putih halus */
+        .date:not(.faded):hover {
+            background-color: var(--hover-bg);
+            transform: translateY(-3px); /* Naik sedikit */
+            color: #fff;
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
+        }
+
+        .date:active {
+            transform: scale(0.95);
+        }
+
+        .date.faded {
+            color: rgba(255, 255, 255, 0.2);
+            pointer-events: none; /* Tidak bisa diklik */
+        }
+
+        /* HARI INI: Outline Cyan */
+        .date.today {
+            color: var(--accent-color);
+            font-weight: bold;
+            border: 1px solid var(--accent-color);
+            box-shadow: 0 0 8px rgba(0, 188, 212, 0.3); /* Glow halus */
+        }
+
+        /* TANGGAL DIPILIH: Block Cyan */
+        .date.selected {
+            background-color: var(--accent-color);
+            color: var(--bg-card); /* Teks jadi gelap agar kontras */
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(0, 188, 212, 0.6); /* Glow kuat */
+            animation: pulse 2s infinite;
+            border-radius: 50%; /* Khusus yang dipilih jadi bulat penuh agar beda */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="datepicker">
+        <div class="header">
+            <button class="nav-btn">&lt;</button>
+            <span class="month-year">February 2025</span>
+            <button class="nav-btn">&gt;</button>
+        </div>
+
+        <div class="days-of-week">
+            <span class="day-name">Su</span>
+            <span class="day-name">Mo</span>
+            <span class="day-name">Tu</span>
+            <span class="day-name">We</span>
+            <span class="day-name">Th</span>
+            <span class="day-name">Fr</span>
+            <span class="day-name">Sa</span>
+        </div>
+
+        <div class="days-grid">
+            <div class="date faded">29</div>
+            <div class="date faded">30</div>
+            <div class="date">1</div>
+            <div class="date">2</div>
+            <div class="date">3</div>
+            <div class="date">4</div>
+            <div class="date">5</div>
+            <div class="date">6</div>
+            <div class="date">7</div>
+            <div class="date">8</div>
+            <div class="date">9</div>
+            <div class="date">10</div>
+            <div class="date">11</div>
+            <div class="date">12</div>
+            <div class="date">13</div>
+            <div class="date">14</div>
+            <div class="date">15</div> 
+            <div class="date">16</div>
+            <div class="date">17</div>
+            <div class="date">18</div>
+            <div class="date">19</div>
+            <div class="date">20</div>
+            <div class="date">21</div>
+            <div class="date">22</div>
+            <div class="date today">23</div> 
+            <div class="date">24</div>
+            <div class="date">25</div>
+            <div class="date selected">26</div>
+            <div class="date">27</div>
+            <div class="date">28</div>
+            <div class="date">29</div>
+            <div class="date">30</div>
+            <div class="date">31</div>
+            <div class="date faded">1</div>
+            <div class="date faded">2</div>
+        </div>
+    </div>
+
+</body>
+</html>
