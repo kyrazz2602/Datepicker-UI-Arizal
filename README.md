@@ -11,7 +11,6 @@ Proyek ini adalah implementasi komponen antarmuka tanggal (Datepicker) statis ya
 ## 📸 Tampilan Proyek
 
 ![Datepicker Preview](Project-image.png)
-*(Pastikan file gambar Project-image.png ada di folder yang sama dengan README ini)*
 
 ## ✨ Fitur Utama
 
